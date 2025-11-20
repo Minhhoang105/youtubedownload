@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultra YT Downloader - Tải Video 4K & AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f0f0f;
+            color: #ffffff;
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #ff0000, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .ai-panel {
+            background: linear-gradient(145deg, rgba(30, 30, 40, 0.6), rgba(20, 20, 30, 0.6));
+            border: 1px solid rgba(100, 100, 255, 0.2);
+        }
+        .loader {
+            border-top-color: #ff0000;
+            -webkit-animation: spinner 1.5s linear infinite;
+            animation: spinner 1.5s linear infinite;
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .sparkle-btn {
+            background: linear-gradient(45deg, #4f46e5, #9333ea);
+            transition: all 0.3s ease;
+        }
+        .sparkle-btn:hover {
+            background: linear-gradient(45deg, #4338ca, #7e22ce);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.4);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff0000; 
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="w-full p-4 border-b border-gray-800 bg-black/50 backdrop-blur-md fixed top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fa-brands fa-youtube text-3xl text-red-600"></i>
+                <span class="text-xl font-bold tracking-tight">Ultra<span class="text-red-500">Downloader</span> <span class="text-xs align-top bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500 font-extrabold ml-1">AI</span></span>
+            </div>
+            <a href="#" class="text-sm text-gray-400 hover:text-white transition">Phiên bản 3.0 AI</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 pt-24 pb-10 flex flex-col items-center justify-center">
+        
+        <!-- Hero Section -->
+        <div class="text-center mb-10 max-w-2xl animate-fade-in-up">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">
+                Tải Video & <br>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-red-400">Phân Tích AI Thông Minh</span>
+            </h1>
+            <p class="text-gray-400 text-lg">Tải xuống 4K và sử dụng Gemini để tóm tắt, tạo hashtag và hơn thế nữa.</p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="w-full max-w-3xl glass-panel rounded-2xl p-2 shadow-2xl mb-10">
+            <div class="flex flex-col md:flex-row gap-2">
+                <div class="relative flex-grow">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-link text-gray-500"></i>
+                    </div>
+                    <input type="text" id="urlInput" 
+                        class="w-full pl-11 pr-4 py-4 bg-transparent border border-transparent focus:border-red-500 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition"
+                        placeholder="Dán link video YouTube vào đây (Ví dụ: https://youtu.be/...)">
+                    <button id="pasteBtn" class="absolute inset-y-0 right-2 px-3 text-gray-400 hover:text-white hidden md:flex items-center" title="Dán từ bộ nhớ đệm">
+                        <i class="fa-regular fa-paste"></i>
+                    </button>
+                </div>
+                <button onclick="processVideo()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 rounded-xl transition transform hover:scale-105 flex items-center justify-center gap-2 shadow-lg shadow-red-600/30">
+                    <span>Bắt đầu</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+            <p id="errorMsg" class="text-red-500 text-sm mt-2 ml-2 hidden"><i class="fa-solid fa-circle-exclamation mr-1"></i> Link không hợp lệ hoặc không tìm thấy video.</p>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingSection" class="hidden flex-col items-center justify-center py-10">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-700 h-12 w-12 mb-4"></div>
+            <p class="text-gray-400 animate-pulse">Đang phân tích dữ liệu video...</p>
+        </div>
+
+        <!-- Result Section -->
+        <div id="resultSection" class="hidden w-full max-w-5xl animate-fade-in flex flex-col gap-6">
+            
+            <!-- Video Info Block -->
+            <div class="glass-panel rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-8">
+                <!-- Thumbnail -->
+                <div class="w-full md:w-1/3 flex-shrink-0">
+                    <div class="relative group rounded-xl overflow-hidden shadow-lg aspect-video">
+                        <img id="videoThumb" src="" alt="Thumbnail" class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <i class="fa-brands fa-youtube text-5xl text-red-600 drop-shadow-lg"></i>
+                        </div>
+                        <span class="absolute bottom-2 right-2 bg-black/80 text-xs font-bold px-2 py-1 rounded text-white" id="videoDuration">--:--</span>
+                    </div>
+                    <div class="mt-2 text-center">
+                         <a id="thumbDownloadLink" href="#" download="thumbnail.jpg" class="text-xs text-gray-400 hover:text-white underline">
+                            <i class="fa-solid fa-download mr-1"></i>Tải ảnh Thumbnail
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Info & Download Options -->
+                <div class="flex-grow flex flex-col">
+                    <h2 id="videoTitle" class="text-2xl font-bold mb-2 line-clamp-2 text-white">Tiêu đề video</h2>
+                    <div class="flex items-center gap-4 text-sm text-gray-400 mb-6">
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-eye"></i> <span id="viewCount">--</span> Views</span>
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-user"></i> <span id="channelName">Channel Name</span></span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <!-- Option 1: Video Highest -->
+                        <div class="flex items-center justify-between bg-gray-800/50 p-3 rounded-lg hover:bg-gray-800 transition border border-gray-700 hover:border-red-500/50 cursor-pointer group" onclick="simulateDownload('2160p (4K)', 'mp4')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-red-600/20 text-red-500 flex items-center justify-center">
+                                    <i class="fa-solid fa-video"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-white group-hover:text-red-400 transition">MP4 - 2160p (4K)</div>
+                                    <div class="text-xs text-green-400">Siêu nét • HDR</div>
+                                </div>
+                            </div>
+                            <button class="bg-white text-black hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg font-bold text-sm transition">Tải về</button>
+                        </div>
+
+                        <!-- Option 2: Audio Only -->
+                        <div class="flex items-center justify-between bg-gray-800/50 p-3 rounded-lg hover:bg-gray-800 transition border border-gray-700 hover:border-blue-500/50 cursor-pointer group" onclick="simulateDownload('320kbps', 'mp3')">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center">
+                                    <i class="fa-solid fa-music"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-white group-hover:text-blue-400 transition">MP3 - Audio</div>
+                                    <div class="text-xs text-gray-400">Âm thanh gốc • 320kbps</div>
+                                </div>
+                            </div>
+                            <button class="bg-white text-black hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg font-bold text-sm transition">Tải về</button>
+                        </div>
+                    </div>
+                    
+                    <p class="mt-4 text-xs text-gray-500 italic">
+                        *Lưu ý: Đây là bản demo Front-end. Nút "Tải về" sẽ xuất file chứa thông tin metadata của video để mô phỏng tính năng.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Gemini AI Section -->
+            <div class="glass-panel ai-panel rounded-2xl p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i>
+                    <h3 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">Công cụ AI (Powered by Gemini)</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <button onclick="generateAI('summary')" class="sparkle-btn text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-align-left"></i>
+                        Dự đoán nội dung
+                    </button>
+                    <button onclick="generateAI('tags')" class="glass-panel hover:bg-white/10 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-gray-600 transition">
+                        <i class="fa-solid fa-hashtag"></i>
+                        Gợi ý Tags SEO
+                    </button>
+                    <button onclick="generateAI('comment')" class="glass-panel hover:bg-white/10 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 border border-gray-600 transition">
+                        <i class="fa-regular fa-comment-dots"></i>
+                        Viết bình luận
+                    </button>
+                </div>
+
+                <!-- AI Output Area -->
+                <div id="aiOutputContainer" class="hidden">
+                    <div class="bg-black/30 rounded-xl p-4 border border-purple-500/30">
+                        <div id="aiLoading" class="flex items-center gap-3 text-purple-300">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i>
+                            <span>Gemini đang suy nghĩ...</span>
+                        </div>
+                        <div id="aiResult" class="prose prose-invert max-w-none text-gray-300 text-sm hidden">
+                            <!-- Content goes here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-gray-800 py-6 bg-black text-center text-gray-600 text-sm">
+        <p>&copy; 2025 UltraDownloader AI. Designed for Educational Purposes.</p>
+    </footer>
+
+    <!-- Mock Modal for Download Progress -->
+    <div id="downloadModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] hidden flex items-center justify-center px-4">
+        <div class="bg-[#1f1f1f] rounded-2xl p-8 max-w-md w-full border border-gray-700 text-center">
+            <h3 class="text-xl font-bold mb-4">Đang xử lý video...</h3>
+            <p id="downloadStatus" class="text-gray-400 text-sm mb-6">Đang kết nối tới server vệ tinh...</p>
+            
+            <div class="w-full bg-gray-700 rounded-full h-2.5 mb-4 overflow-hidden">
+                <div id="progressBar" class="bg-red-600 h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+            
+            <div class="flex justify-between text-xs text-gray-500 font-mono">
+                <span id="progressPercent">0%</span>
+                <span id="downloadSpeed">0 MB/s</span>
+            </div>
+
+            <button onclick="closeModal()" id="closeModalBtn" class="mt-6 bg-gray-600 hover:bg-gray-500 text-white px-6 py-2 rounded-lg text-sm hidden transition w-full">
+                Đóng
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; // Gemini API Key provided by environment
+        let currentVideoData = {};
+        let currentAiContent = ""; // Store AI content to save in file
+
+        // Helper: Get Youtube ID
+        function getYouTubeID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Helper: Format random number for views
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // Paste button logic
+        document.getElementById('pasteBtn').addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('urlInput').value = text;
+                processVideo();
+            } catch (err) {
+                alert('Vui lòng cho phép truy cập clipboard hoặc dán thủ công!');
+            }
+        });
+
+        // Main Process Function
+        async function processVideo() {
+            const url = document.getElementById('urlInput').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            const loading = document.getElementById('loadingSection');
+            const result = document.getElementById('resultSection');
+            
+            // Reset UI
+            errorMsg.classList.add('hidden');
+            result.classList.add('hidden');
+            document.getElementById('aiOutputContainer').classList.add('hidden');
+            currentAiContent = ""; // Reset AI content
+            
+            const videoID = getYouTubeID(url);
+
+            if (!videoID) {
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            // Show Loading
+            loading.classList.remove('hidden');
+            loading.classList.add('flex');
+
+            try {
+                // Try to fetch real metadata using noembed (No API Key needed)
+                const response = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoID}`);
+                const data = await response.json();
+
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+                result.classList.remove('hidden');
+
+                // Update UI with Real Data or Fallback
+                const title = data.title || "Video YouTube không tên";
+                const author = data.author_name || "Kênh YouTube";
+                const thumbUrl = `https://img.youtube.com/vi/${videoID}/maxresdefault.jpg`;
+                
+                document.getElementById('videoThumb').src = thumbUrl;
+                document.getElementById('videoTitle').innerText = title; 
+                document.getElementById('viewCount').innerText = formatNumber(Math.floor(Math.random() * 1000000) + 50000); // Mock views
+                document.getElementById('channelName').innerText = author;
+                document.getElementById('videoDuration').innerText = Math.floor(Math.random() * 10) + 2 + ":" + (Math.floor(Math.random() * 50) + 10);
+                
+                // Update thumbnail download link
+                const thumbLink = document.getElementById('thumbDownloadLink');
+                thumbLink.href = thumbUrl;
+                thumbLink.target = "_blank";
+
+                // Save for AI and Download
+                currentVideoData = { title, author, url, videoID };
+
+            } catch (e) {
+                // Fallback if fetch fails
+                loading.classList.add('hidden');
+                loading.classList.remove('flex');
+                result.classList.remove('hidden');
+                
+                document.getElementById('videoThumb').src = `https://img.youtube.com/vi/${videoID}/maxresdefault.jpg`;
+                document.getElementById('videoTitle').innerText = "Video YouTube (Không lấy được dữ liệu)";
+                document.getElementById('channelName').innerText = "YouTube Channel";
+                currentVideoData = { title: "Unknown Video", author: "Unknown Channel", url, videoID };
+            }
+        }
+
+        // AI Generation Logic
+        async function generateAI(type) {
+            const container = document.getElementById('aiOutputContainer');
+            const loading = document.getElementById('aiLoading');
+            const resultDiv = document.getElementById('aiResult');
+            
+            container.classList.remove('hidden');
+            loading.classList.remove('hidden');
+            resultDiv.classList.add('hidden');
+            resultDiv.innerHTML = '';
+
+            let prompt = "";
+            if (type === 'summary') {
+                prompt = `Hãy đóng vai một chuyên gia nội dung YouTube. Dựa trên tiêu đề video: "${currentVideoData.title}" của kênh "${currentVideoData.author}", hãy dự đoán và viết một đoạn tóm tắt ngắn gọn (khoảng 3-4 câu) về nội dung video này có thể chứa đựng. Hãy viết bằng tiếng Việt thật hấp dẫn.`;
+            } else if (type === 'tags') {
+                prompt = `Dựa trên tiêu đề video YouTube: "${currentVideoData.title}", hãy gợi ý 15 thẻ hashtag (#) và từ khóa SEO tốt nhất để video này lên xu hướng. Chỉ liệt kê các thẻ, ngăn cách bằng dấu phẩy.`;
+            } else if (type === 'comment') {
+                prompt = `Dựa trên tiêu đề video: "${currentVideoData.title}", hãy viết 3 mẫu bình luận ngắn, tích cực và thú vị (bằng tiếng Việt) mà người xem có thể dùng để comment dưới video này. Có sử dụng emoji.`;
+            }
+
+            try {
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{ text: prompt }]
+                            }]
+                        })
+                    }
+                );
+
+                const data = await response.json();
+                const text = data.candidates[0].content.parts[0].text;
+                
+                currentAiContent = `\n\n--- KẾT QUẢ AI (${type.toUpperCase()}) ---\n${text}`;
+
+                loading.classList.add('hidden');
+                resultDiv.classList.remove('hidden');
+                resultDiv.innerHTML = marked.parse(text);
+
+            } catch (error) {
+                loading.classList.add('hidden');
+                resultDiv.classList.remove('hidden');
+                resultDiv.innerHTML = '<span class="text-red-400">Lỗi kết nối với Gemini AI. Vui lòng thử lại sau.</span>';
+                console.error(error);
+            }
+        }
+
+        // Download Simulation - Now with ACTUAL File Generation
+        function simulateDownload(quality, format) {
+            const modal = document.getElementById('downloadModal');
+            const bar = document.getElementById('progressBar');
+            const percent = document.getElementById('progressPercent');
+            const status = document.getElementById('downloadStatus');
+            const speed = document.getElementById('downloadSpeed');
+            const closeBtn = document.getElementById('closeModalBtn');
+
+            modal.classList.remove('hidden');
+            bar.style.width = '0%';
+            percent.innerText = '0%';
+            closeBtn.classList.add('hidden');
+            status.innerText = `Đang khởi tạo download ${format.toUpperCase()} ${quality}...`;
+            status.classList.remove('text-green-500'); // reset color
+
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    status.innerText = "Hoàn tất! File đã được tải xuống.";
+                    status.classList.add('text-green-500');
+                    speed.innerText = "Done";
+                    closeBtn.classList.remove('hidden');
+                    
+                    // --- ACTUAL FILE DOWNLOAD TRIGGER ---
+                    const fileContent = `
+=========================================
+ULTRA YT DOWNLOADER - REPORT
+=========================================
+Video Title: ${currentVideoData.title}
+Channel: ${currentVideoData.author}
+Video URL: ${currentVideoData.url}
+Requested Format: ${format.toUpperCase()} - ${quality}
+Date: ${new Date().toLocaleString()}
+
+NOTE: Do chính sách bảo mật của YouTube, trình duyệt web không thể tải trực tiếp file Video lớn mà không có Server trung gian. File này xác nhận quy trình xử lý đã thành công trên giao diện.
+
+Để xem video gốc, vui lòng truy cập: ${currentVideoData.url}
+=========================================
+${currentAiContent}
+`;
+                    const blob = new Blob([fileContent], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `YT_Info_${currentVideoData.videoID}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    // ------------------------------------
+
+                } else {
+                    width += Math.random() * 5;
+                    if (width > 100) width = 100;
+                    
+                    bar.style.width = width + '%';
+                    percent.innerText = Math.round(width) + '%';
+                    
+                    if(width < 30) status.innerText = "Đang phân giải luồng dữ liệu...";
+                    else if(width < 60) status.innerText = "Đang xác thực token...";
+                    else if(width < 90) status.innerText = "Đang tạo file đích...";
+
+                    speed.innerText = (Math.random() * 10 + 5).toFixed(1) + " MB/s";
+                }
+            }, 150);
+        }
+
+        function closeModal() {
+            document.getElementById('downloadModal').classList.add('hidden');
+        }
+
+        document.getElementById('urlInput').addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                processVideo();
+            }
+        });
+    </script>
+</body>
+</html>
